@@ -1,0 +1,138 @@
+SCANSSTAMP(1)                     User Commands                    SCANSTAMP(1)
+
+NAME
+    scanstamp - standardize filenames with date prefixes and optional content-derived titles
+
+SYNOPSIS
+    scanstamp [OPTIONS] [PATHS]...
+
+DESCRIPTION
+    scanstamp is a cross-platform command-line utility that standardizes filenames by
+    applying a date prefix and, optionally, generating a human-meaningful document title
+    derived from file content.
+
+    The canonical filename format is:
+
+        YYYYMMDD - Document Name.ext
+
+    scanstamp is designed for batch safety, predictable behavior, and full undo support.
+
+OPERATING MODES
+    Exactly one mode is active per run. If no mode flag is supplied, smart-title mode is used.
+
+    --date-only
+        Add a date prefix only if missing. Never scans content and never calls an LLM.
+
+    --redate
+        Replace an existing date prefix if present, otherwise add one. Preserve the title.
+        Never scans content and never calls an LLM.
+
+    --keep-title
+        Replace or add a date prefix while preserving the title exactly as-is.
+        Never scans content and never calls an LLM.
+
+    --keep-date
+        Smart-title mode only. Preserve an existing date prefix if present. The title
+        may still be replaced by LLM output.
+
+UNDO MODE
+    --undo [FILE]
+        Reverse previous renames using the log file. If FILE is not supplied,
+        .scanstamp-log.csv is used.
+
+        Supports --dry-run.
+
+DATE SELECTION
+    Date prefix selection priority:
+
+    1. --date YYYYMMDD
+    2. --use-mtime
+    3. Today's local date
+
+OPTIONS
+    --date YYYYMMDD
+        Explicitly set the date prefix.
+
+    --use-mtime
+        Use file modification time for the date prefix.
+
+    --prefer-doc-date
+        Smart-title mode only. Attempt to parse a date from document content.
+
+    --chars N
+        Maximum number of characters used for the content excerpt. Default: 1200.
+
+    --excerpt-mode MODE
+        Excerpt extraction strategy. One of:
+            firstline
+            headings
+            firstparas
+            raw
+
+    --ocr
+        Enable OCR fallback for PDFs using tesseract.
+
+    --recursive
+        Recurse into subdirectories.
+
+    --include GLOB
+        Include files matching glob. Repeatable.
+
+    --exclude GLOB
+        Exclude files matching glob. Repeatable.
+
+    --suffix
+        On filename collisions, append (2), (3), etc. instead of skipping.
+
+    --dry-run
+        Print proposed changes without renaming files.
+
+    --yes
+        Bypass all confirmation prompts.
+
+    --confirm
+        Force confirmation prompts even if --yes is not supplied.
+
+    --log FILE
+        Write rename log to FILE. Default: .scanstamp-log.csv
+
+    --report FILE
+        Write a CSV report of operations to FILE.
+
+    --no-llm
+        Disable all LLM usage.
+
+    --local-only
+        Do not send any content off-machine.
+
+    --version
+        Print version and exit.
+
+    -h, --help
+        Show help message and exit.
+
+OUTPUT
+    On successful rename:
+        Renamed: old.ext -> new.ext
+
+    On dry run:
+        DRY RUN: old.ext -> new.ext
+
+    On skip:
+        Already dated, skipping: name.ext
+
+    A summary block is always printed at the end of execution.
+
+FILES
+    .scanstamp-log.csv
+        Default rename log file used for undo operations.
+
+EXIT STATUS
+    0   Success
+    1   One or more errors occurred
+
+AUTHOR
+    Joel
+
+SEE ALSO
+    python(1)

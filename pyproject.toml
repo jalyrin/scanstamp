@@ -1,0 +1,51 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "scanstamp"
+version = "0.1.0"
+description = "Cross-platform CLI to standardize file names with date prefixes and optional content-derived titles."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Joel" }]
+keywords = ["cli", "renamer", "documents", "pdf", "docx", "llm"]
+dependencies = [
+  "typer[all]>=0.12.0",
+  "rich>=13.0.0",
+]
+
+[project.scripts]
+scanstamp = "scanstamp.cli:app"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+# Include man page + docs in sdists/wheels if you later choose to ship them.
+# (Safe even if you don't.)
+scanstamp = ["py.typed"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+check_untyped_defs = true
+no_implicit_optional = true
