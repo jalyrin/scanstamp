@@ -17,7 +17,10 @@ from scanstamp.core import run_rename, run_undo, run_diagnose
 from scanstamp.logging_undo import DEFAULT_LOG_NAME
 from scanstamp.models import ExcerptMode, Mode, Options
 
-app = typer.Typer(add_completion=False)
+app = typer.Typer(
+    add_completion=False,
+    help="Rename scanned documents with date-prefixed, LLM-generated descriptive titles.",
+)
 console = Console()
 
 
@@ -45,7 +48,7 @@ def _resolve_mode(date_only: bool, redate: bool, keep_title: bool) -> Mode:
     return Mode.smart_title
 
 
-@app.command()
+@app.command(help="Rename scanned documents with smart, date-prefixed titles.")
 def main(
     paths: List[FSPath] = typer.Argument(
         None,
@@ -53,42 +56,133 @@ def main(
     ),
 
     # Mode selection.
-    date_only: bool = typer.Option(False, "--date-only"),
-    redate: bool = typer.Option(False, "--redate"),
-    keep_title: bool = typer.Option(False, "--keep-title"),
-    keep_date: bool = typer.Option(False, "--keep-date"),
+    date_only: bool = typer.Option(
+        False, "--date-only",
+        help="Prepend date only; leave the existing filename intact.",
+        rich_help_panel="Mode Selection",
+    ),
+    redate: bool = typer.Option(
+        False, "--redate",
+        help="Replace an existing date prefix with a new one.",
+        rich_help_panel="Mode Selection",
+    ),
+    keep_title: bool = typer.Option(
+        False, "--keep-title",
+        help="Keep the current title but add a date prefix.",
+        rich_help_panel="Mode Selection",
+    ),
+    keep_date: bool = typer.Option(
+        False, "--keep-date",
+        help="Keep the existing date prefix in smart-title mode.",
+        rich_help_panel="Mode Selection",
+    ),
 
     # Safety and UX.
-    confirm: bool = typer.Option(False, "--confirm"),
-    yes: bool = typer.Option(False, "--yes"),
-    dry_run: bool = typer.Option(False, "--dry-run"),
-    undo: Optional[FSPath] = typer.Option(None, "--undo"),
-    log_path: FSPath = typer.Option(FSPath(DEFAULT_LOG_NAME), "--log"),
-    report_path: Optional[FSPath] = typer.Option(None, "--report"),
+    confirm: bool = typer.Option(
+        False, "--confirm",
+        help="Prompt for confirmation before each rename.",
+        rich_help_panel="Safety & UX",
+    ),
+    yes: bool = typer.Option(
+        False, "--yes",
+        help="Skip all confirmation prompts.",
+        rich_help_panel="Safety & UX",
+    ),
+    dry_run: bool = typer.Option(
+        False, "--dry-run",
+        help="Preview renames without making changes.",
+        rich_help_panel="Safety & UX",
+    ),
+    undo: Optional[FSPath] = typer.Option(
+        None, "--undo",
+        help="Undo renames using the given log file.",
+        rich_help_panel="Safety & UX",
+    ),
+    log_path: FSPath = typer.Option(
+        FSPath(DEFAULT_LOG_NAME), "--log",
+        help="Path for the undo/rename log file.",
+        rich_help_panel="Safety & UX",
+    ),
+    report_path: Optional[FSPath] = typer.Option(
+        None, "--report",
+        help="Write a summary report to this path.",
+        rich_help_panel="Safety & UX",
+    ),
 
     # Traversal.
-    recursive: bool = typer.Option(False, "--recursive"),
-    include: List[str] = typer.Option([], "--include"),
-    exclude: List[str] = typer.Option([], "--exclude"),
+    recursive: bool = typer.Option(
+        False, "--recursive",
+        help="Recurse into subdirectories.",
+        rich_help_panel="Traversal",
+    ),
+    include: List[str] = typer.Option(
+        [], "--include",
+        help="Only process files matching these patterns.",
+        rich_help_panel="Traversal",
+    ),
+    exclude: List[str] = typer.Option(
+        [], "--exclude",
+        help="Skip files matching these patterns.",
+        rich_help_panel="Traversal",
+    ),
 
     # Date selection.
-    date: Optional[str] = typer.Option(None, "--date"),
-    use_mtime: bool = typer.Option(False, "--use-mtime"),
-    prefer_doc_date: bool = typer.Option(False, "--prefer-doc-date"),
+    date: Optional[str] = typer.Option(
+        None, "--date",
+        help="Use this date (YYYY-MM-DD) instead of auto-detecting.",
+        rich_help_panel="Date Selection",
+    ),
+    use_mtime: bool = typer.Option(
+        False, "--use-mtime",
+        help="Fall back to file modification time for the date.",
+        rich_help_panel="Date Selection",
+    ),
+    prefer_doc_date: bool = typer.Option(
+        False, "--prefer-doc-date",
+        help="Prefer the date found inside the document content.",
+        rich_help_panel="Date Selection",
+    ),
 
     # Extraction and naming.
-    chars: int = typer.Option(1200, "--chars"),
-    excerpt_mode: ExcerptMode = typer.Option(ExcerptMode.firstparas, "--excerpt-mode"),
-    ocr: bool = typer.Option(False, "--ocr"),
+    chars: int = typer.Option(
+        1200, "--chars",
+        help="Max characters to extract for title generation.",
+        rich_help_panel="Extraction & Naming",
+    ),
+    excerpt_mode: ExcerptMode = typer.Option(
+        ExcerptMode.firstparas, "--excerpt-mode",
+        help="Strategy for extracting text (e.g. firstparas, full).",
+        rich_help_panel="Extraction & Naming",
+    ),
+    ocr: bool = typer.Option(
+        False, "--ocr",
+        help="Use OCR to extract text from image-based documents.",
+        rich_help_panel="Extraction & Naming",
+    ),
 
     # Collision handling.
-    suffix: bool = typer.Option(False, "--suffix"),
+    suffix: bool = typer.Option(
+        False, "--suffix",
+        help="Append a numeric suffix to avoid filename collisions.",
+        rich_help_panel="Collision Handling",
+    ),
 
     # Privacy and LLM control.
-    no_llm: bool = typer.Option(False, "--no-llm"),
-    local_only: bool = typer.Option(False, "--local-only"),
+    no_llm: bool = typer.Option(
+        False, "--no-llm",
+        help="Disable LLM title generation entirely.",
+        rich_help_panel="Privacy & LLM",
+    ),
+    local_only: bool = typer.Option(
+        False, "--local-only",
+        help="Use only local models; never send data to remote APIs.",
+        rich_help_panel="Privacy & LLM",
+    ),
 
-    version: bool = typer.Option(False, "--version"),
+    version: bool = typer.Option(
+        False, "--version",
+        help="Show version and exit.",
+    ),
 ):
     # Handle version early and exit cleanly.
     if version:
@@ -150,7 +244,7 @@ def main(
     run_rename(paths=paths, opts=opts)
 
 
-@app.command()
+@app.command(help="Check availability of optional external dependencies.")
 def diagnose():
     # Report availability of optional external dependencies.
     run_diagnose()
