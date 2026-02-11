@@ -6,8 +6,6 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from enum import Enum
 from pathlib import Path as FSPath
 from typing import List, Optional
 
@@ -17,58 +15,10 @@ from rich.console import Console
 from scanstamp import __version__
 from scanstamp.core import run_rename, run_undo, run_diagnose
 from scanstamp.logging_undo import DEFAULT_LOG_NAME
+from scanstamp.models import ExcerptMode, Mode, Options
 
 app = typer.Typer(add_completion=False)
 console = Console()
-
-
-# Operating modes.
-# Exactly one of these is active per run.
-class Mode(str, Enum):
-    smart_title = "smart-title"
-    date_only = "date-only"
-    redate = "redate"
-    keep_title = "keep-title"
-
-
-# Excerpt construction strategies used during text extraction.
-class ExcerptMode(str, Enum):
-    firstline = "firstline"
-    headings = "headings"
-    firstparas = "firstparas"
-    raw = "raw"
-
-
-# Normalized container for all CLI options.
-# This prevents argument sprawl across the core logic.
-@dataclass(frozen=True)
-class Options:
-    mode: Mode
-    keep_date: bool
-
-    confirm: bool
-    yes: bool
-    dry_run: bool
-
-    recursive: bool
-    include: List[str]
-    exclude: List[str]
-
-    date: Optional[str]
-    use_mtime: bool
-    prefer_doc_date: bool
-
-    chars: int
-    excerpt_mode: ExcerptMode
-    ocr: bool
-
-    suffix: bool
-
-    no_llm: bool
-    local_only: bool
-
-    log_path: FSPath
-    report_path: Optional[FSPath]
 
 
 def _resolve_mode(date_only: bool, redate: bool, keep_title: bool) -> Mode:

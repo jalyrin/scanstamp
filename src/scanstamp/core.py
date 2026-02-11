@@ -12,7 +12,7 @@ from typing import Iterable, Optional, Tuple
 
 from rich.console import Console
 
-from scanstamp.cli import Options, Mode
+from scanstamp.models import Options, Mode
 from scanstamp.logging_undo import LogWriter, ReportWriter, undo_from_log
 from scanstamp.naming import (
     build_target_name,
