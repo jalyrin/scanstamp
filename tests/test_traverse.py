@@ -52,3 +52,24 @@ def test_iter_target_files_exclude_filter(tmp_path: Path) -> None:
         p.name for p in iter_target_files([tmp_path], recursive=False, include=[], exclude=["*.pdf"])
     )
     assert got == ["a.txt"]
+
+
+def test_iter_target_files_skips_hidden_files(tmp_path: Path) -> None:
+    (tmp_path / ".DS_Store").write_text("x", encoding="utf-8")
+    (tmp_path / ".localized").write_text("x", encoding="utf-8")
+    (tmp_path / "normal.txt").write_text("x", encoding="utf-8")
+
+    got = sorted(
+        p.name for p in iter_target_files([tmp_path], recursive=False, include=[], exclude=[])
+    )
+    assert got == ["normal.txt"]
+
+
+def test_iter_target_files_skips_extensionless_files(tmp_path: Path) -> None:
+    (tmp_path / "PWRequestCache").write_text("x", encoding="utf-8")
+    (tmp_path / "doc.pdf").write_text("x", encoding="utf-8")
+
+    got = sorted(
+        p.name for p in iter_target_files([tmp_path], recursive=False, include=[], exclude=[])
+    )
+    assert got == ["doc.pdf"]

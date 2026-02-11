@@ -53,7 +53,11 @@ def iter_target_files(
             if recursive:
                 for root, _, files in os.walk(p):
                     for name in files:
+                        if name.startswith("."):
+                            continue
                         f = Path(root) / name
+                        if f.suffix == "":
+                            continue
                         if exclude and _matches_any(f, exclude):
                             continue
                         if include and not _matches_any(f, include):
@@ -62,6 +66,10 @@ def iter_target_files(
             else:
                 for f in p.iterdir():
                     if not f.is_file():
+                        continue
+                    if f.name.startswith("."):
+                        continue
+                    if f.suffix == "":
                         continue
                     if exclude and _matches_any(f, exclude):
                         continue

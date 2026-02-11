@@ -44,6 +44,11 @@ def test_build_target_name_normalizes_hyphen_spacing() -> None:
     assert build_target_name("20260110", "Title", ".pdf") == "20260110 - Title.pdf"
 
 
+def test_sanitize_title_preserves_possessive_apostrophes() -> None:
+    out = sanitize_title("Dad's cheat sheet", prefer_title_case=True)
+    assert out == "Dad's Cheat Sheet"
+
+
 def test_choose_date_prefix_accepts_explicit_date() -> None:
     p = Path("any.txt")
     assert choose_date_prefix(p, explicit="20251205", use_mtime=False) == "20251205"

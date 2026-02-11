@@ -70,7 +70,7 @@ def sanitize_title(title: str, prefer_title_case: bool) -> str:
     if prefer_title_case:
         # Title casing is a heuristic.
         # We keep it simple now and refine later if needed.
-        t = t.title()
+        t = re.sub(r"[^\W_]+('[^\W_]+)?", lambda m: m.group(0).capitalize(), t, flags=re.UNICODE)
 
     return t
 
